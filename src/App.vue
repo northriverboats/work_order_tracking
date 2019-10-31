@@ -1,6 +1,11 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
+    <div class="vld-parent">
+      <loading :active.sync="loaded"
+        :can-cancel="false"
+        :is-full-page="true">
+      </loading>
+    </div>
     <router-view/>
   </div>
 </template>
