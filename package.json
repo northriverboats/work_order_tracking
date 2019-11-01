@@ -1,7 +1,7 @@
 {
-  "name": "work-order-tracking-frontend",
+  "name": "work-order-tracking",
   "version": "1.0.0",
-  "description": "Work Order Tracking Frontend",
+  "description": "Work Order Tracking",
   "author": "Fredrick W. Warren <fredw@northriverboats.com>",
   "private": true,
   "scripts": {

@@ -44,7 +44,8 @@ const devWebpackConfig = merge(baseWebpackConfig, {
       poll: config.dev.poll,
     },
     allowedHosts: [
-      'owncloud.northriverboats.com'
+      'workordertracking.northriverboats.com',
+      'workordertracking'
     ]
   },
   plugins: [
