@@ -2,21 +2,23 @@
 tasks.py
 - taks to be handled by redis
 - all of these functions are called from flask but run in redis
+
+Check database to see if file had already been scanned
+
 """
 
-# from Flask import current_app
-# from workorderapi.application import create_app
-# from workorderapi.models import db, Workorder, History
 from workorderapi.scan import scan
 from workorderapi.excel_pdf import Spreadsheet
 from rq import get_current_job
+from pathlib import Path
 
 job = None
 
 
 def set_status(message):
     if job:
-        job.meta['status'] = message
+        text = job.meta['status']
+        job.meta['status'] = text + message + '\n'
         job.save_meta()
     else:
         print(message)
@@ -25,6 +27,17 @@ def set_status(message):
 def add_file(file):
     global job
     job = get_current_job()
+    if job:
+        job.meta['status'] = ''
+        job.save_meta()
+
+    set_status('Adding File: {}'.format(file))
+
+    test_file = Path(file)
+    if Path('/opt/workorders_git/' + test_file.stem + '.txt').exists():
+        set_status('File Is Already Being Tracked')
+        set_status('Done')
+        return
 
     set_status('Scanning')
     files = scan()

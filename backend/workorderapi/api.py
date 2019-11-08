@@ -6,7 +6,7 @@ api.py
 
 from flask import Blueprint, current_app
 from flask_restful import Resource, reqparse
-
+from workorderapi.models import db, Workorder, History
 
 api = Blueprint('api', __name__)
 
@@ -28,7 +28,6 @@ class File(Resource):
         name = args['name']
         job = current_app.task_queue.enqueue(
             'workorderapi.tasks.add_file', name)
-        job.meta['status'] = 'Started'
         job.save_meta()
         return {'job': job.get_id()}
 
@@ -41,8 +40,20 @@ class FileStatus(Resource):
         if job:
             job.refresh()
             meta = job.meta
+
         else:
-            meta = []
-            meta['status'] = 'Done'
+            return {'status': 'Done'}
+
+        if 'Done' in meta['status']:
+            # should not happen, add only if not in db already
+            exists = Workorder.query.filter_by(workorder=meta['name']).first()
+            if not exists:
+                hi = History(description='Added to tracking system')
+                wo = Workorder(workorder=meta['name'],
+                               folder=meta['folder'],
+                               history=[hi],
+                               user_id=2)
+                db.session.add(wo, hi)
+                db.session.commit()
 
         return {'status': meta['status']}

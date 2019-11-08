@@ -13,7 +13,8 @@ job = None
 
 def set_status(message):
     if job:
-        job.meta['status'] = message
+        text = job.meta['status']
+        job.meta['status'] = text + message + '\n'
         job.save_meta()
     else:
         print(message)
@@ -58,6 +59,7 @@ def scan():
 
     files = {**bwp, **bip, **deb}
     return files
+
 
 def test():
     start_time = time.time()

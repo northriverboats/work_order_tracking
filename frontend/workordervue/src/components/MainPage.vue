@@ -36,8 +36,7 @@ export default {
       polling: null,
       pollCount: 0,
       job: '',
-      status: '',
-      statusOld: ''
+      status: ''
     }
   },
   methods: {
@@ -45,18 +44,18 @@ export default {
       this.axios
         .post('file/status', {'job': this.job})
         .then((response) => {
-          var stat = response.data.status
-          if (this.statusOld !== stat) {
-            this.status += stat + '\n'
-            this.statusOld = stat
-          }
+          var lines = response.data.status.split('\n').slice(-20)
+          this.status = lines.join('\n')
           this.pollCount += 1
-          if (stat === 'Done' || this.pollCount > 240) {
+          if (lines[lines.length - 2] === 'Done' || this.pollCount > 90) {
+            this.job = ''
+            this.pollCount = 0
             clearInterval(this.polling)
           }
         })
     },
     submitFile (file) {
+      if (this.job !== '') return
       this.status = ''
       this.statusOld = ''
       this.pollingCount = 0
@@ -65,7 +64,7 @@ export default {
         .post('file', {'name': file[0]['name']})
         .then((response) => {
           this.job = response.data.job
-          this.polling = setInterval(this.pollingTimer, 100)
+          this.polling = setInterval(this.pollingTimer, 500)
         })
     }
   },

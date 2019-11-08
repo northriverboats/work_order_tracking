@@ -19,33 +19,34 @@ class Spreadsheet():
 
     def set_status(self, message):
         if self.job:
-            self.job.meta['status'] = message
+            text = self.job.meta['status']
+            self.job.meta['status'] = text + message + '\n'
             self.job.save_meta()
         else:
             print(message)
 
     def prep_sheet(self):
         self.folder = mkdtemp()
-        if self.file.suffix == ".xls":
-            self.set_status('Converting: {}'.format(self.file.name))
+        if self.file.suffix.lower() == ".xls":
+            self.set_status('Converting From xls To xlsx')
 
             call(['/usr/local/bin/unoconv',
                   '-f', 'xlsx',
                   '--output=' + self.folder + '/workorder.xlsx',
                   self.file.as_posix()])
 
-            self.set_status('Converted: {}'.format(self.file.name))
+            self.set_status('Sheet Converted To xlsx')
         elif self.file.suffix == ".xlsx":
-            self.set_status('Copying: {}'.format(self.file.name))
+            self.set_status('Copying File')
             copyfile(self.file.as_posix(), self.folder + '/workorder.xlsx')
-            self.set_status('Copied: {}'.format(self.file.name))
+            self.set_status('File Copied')
 
     def opensheet(self):
         self.wb = load_workbook(self.folder + '/workorder.xlsx')
         self.ws = self.wb.worksheets[0]
 
     def find_edges(self):
-        self.set_status('Edge detction in progress')
+        self.set_status('Edge Detction In Progress')
         for i in range(self.ws.max_row, 0, -1):
             v1 = self.ws.cell(column=1, row=i).value
             v2 = self.ws.cell(column=2, row=i).value
@@ -68,9 +69,11 @@ class Spreadsheet():
             # top of search area
             if v2 == 'ENGINE OUTFITTING OPTIONS':
                 self.start = i
+                self.set_status('Edges Detected')
                 break
             if v1 == 'ENGINE OPTIONS':
                 self.start = i
+                self.set_status('Edges Detected')
                 break
 
     def create_text_version(self):

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 manage.py
 - provides a command line utility for interacting with the
