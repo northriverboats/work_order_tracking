@@ -5,7 +5,7 @@
         v-model="dropFiles"
         native multiple
         drag-drop
-        @input="test"
+        @input="submitFile"
       >
         <section class="section">
           <div class="content has-text-centered">
@@ -21,19 +21,9 @@
       </b-upload>
     </b-field>
 
-    <div class="tags">
-      <span v-for="(file, index) in dropFiles"
-        :key="index"
-        class="tag is-primary"
-      >
-        {{ file.name }}
-        <button class="delete is-small"
-          type="button"
-          @click="deleteDropFile(index)"
-        >
-        </button>
-      </span>
-    </div>
+    <b-message title="Status" :closable=false>
+      <span style="white-space: pre;">{{ status }}</span>
+    </b-message>
   </section>
 </template>
 
@@ -42,16 +32,45 @@ export default {
   name: 'MainPage',
   data () {
     return {
-      dropFiles: []
+      dropFiles: [],
+      polling: null,
+      pollCount: 0,
+      job: '',
+      status: '',
+      statusOld: ''
     }
   },
   methods: {
-    test (file) {
-      console.log(file[0]['name'])
+    pollingTimer () {
+      this.axios
+        .post('file/status', {'job': this.job})
+        .then((response) => {
+          var stat = response.data.status
+          if (this.statusOld !== stat) {
+            this.status += stat + '\n'
+            this.statusOld = stat
+          }
+          this.pollCount += 1
+          if (stat === 'Done' || this.pollCount > 240) {
+            clearInterval(this.polling)
+          }
+        })
     },
-    deleteDropFile (index) {
-      this.dropFiles.splice(index, 1)
+    submitFile (file) {
+      this.status = ''
+      this.statusOld = ''
+      this.pollingCount = 0
+      console.log(file[0]['name'])
+      this.axios
+        .post('file', {'name': file[0]['name']})
+        .then((response) => {
+          this.job = response.data.job
+          this.polling = setInterval(this.pollingTimer, 100)
+        })
     }
+  },
+  beforeDestroy () {
+    clearInterval(this.polling)
   }
 }
 </script>

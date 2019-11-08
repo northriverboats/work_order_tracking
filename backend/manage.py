@@ -9,7 +9,7 @@ from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 
 from workorderapi.application import create_app
-from workorderapi.models import db, Workorder, Action
+from workorderapi.models import db, Workorder, History, User
 
 app = create_app()
 
@@ -24,8 +24,9 @@ manager.add_command('db', MigrateCommand)
 def shell_ctx():
     return dict(app=app,
                 db=db,
+                User=User,
                 Workorder=Workorder,
-                Action=Action)
+                History=History)
 
 
 if __name__ == '__main__':

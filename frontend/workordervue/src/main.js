@@ -9,11 +9,17 @@ import App from './App'
 import router from './router'
 import store from './store'
 import VueLodash from 'vue-lodash'
+import axios from 'axios'
+import VueAxios from 'vue-axios'
+
+/* eslint no-undef: "error" */
+axios.defaults.baseURL = 'https://workordertracking.northriverboats.com/api/'
 
 Vue.config.productionTip = false
 
 Vue.use(Buefy)
 Vue.use(VueLodash)
+Vue.use(VueAxios, axios)
 
 /* eslint-disable no-new */
 new Vue({

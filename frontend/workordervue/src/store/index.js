@@ -4,7 +4,7 @@ import axios from 'axios'
 import VueAxios from 'vue-axios'
 
 /* eslint no-undef: "error" */
-axios.defaults.baseURL = 'https://owncloud.northriverboats.com/workorder/api/'
+axios.defaults.baseURL = 'https://workordertracking.northriverboats.com/api/'
 
 Vue.use(Vuex)
 Vue.use(VueAxios, axios)
