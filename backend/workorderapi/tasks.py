@@ -11,6 +11,7 @@ from workorderapi.scan import scan
 from workorderapi.excel_pdf import Spreadsheet
 from rq import get_current_job
 from pathlib import Path
+import re
 
 job = None
 
@@ -32,6 +33,11 @@ def sanity_check(file):
         return False
     if not (file.suffix.lower() == '.xls' or file.suffix.lower() == '.xlsx'):
         set_status('File Is Not An Excel File')
+        set_status('Error')
+        return False
+    match = re.search(r'\d{5} ?[A-L]\d{3}', file.name)
+    if not match:
+        set_status('File Name Does Not Contain  Hull Serial Number')
         set_status('Error')
         return False
     return True
@@ -62,6 +68,8 @@ def add_file(file):
             if 'Error' in job.meta['status']:
                 return
 
+            match = re.search(r'\d{5} ?[A-L]\d{3}', result.name)
+            job.meta['hull'] = match.group()
             job.meta['folder'] = result.parts[4]
             job.meta['path'] = result.as_posix()
             job.meta['name'] = result.name

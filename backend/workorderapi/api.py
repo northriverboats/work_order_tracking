@@ -51,7 +51,7 @@ class FileStatus(Resource):
             if not exists:
                 hi = History(description='Added to tracking system')
                 wo = Workorder(workorder=meta['name'],
-                               hull=meta['name'][:10],
+                               hull=meta['hull'],
                                folder=meta['folder'],
                                history=[hi],
                                user_id=2)
