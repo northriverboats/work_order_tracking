@@ -45,17 +45,34 @@ class FileStatus(Resource):
             return {'status': 'Done'}
 
         status = meta.get('status', '')
-        if status == 'Done':
+        if 'Done' in status:
             # should not happen, add only if not in db already
             exists = Workorder.query.filter_by(workorder=meta['name']).first()
             if not exists:
                 hi = History(description='Added to tracking system')
                 wo = Workorder(workorder=meta['name'],
-                               hull=meta['name'][:9],
+                               hull=meta['name'][:10],
                                folder=meta['folder'],
                                history=[hi],
                                user_id=2)
                 db.session.add(wo, hi)
                 db.session.commit()
 
-        return {'status': meta['status']}
+        return {'status': status}
+
+
+class WorkOrderHistory(Resource):
+    def get(self):
+        results = []
+        for workorder in Workorder.query.\
+                order_by(Workorder.hull).\
+                filter_by(archived=False):
+            results.append({
+                'id': workorder.id,
+                'hull': workorder.hull,
+                'workorder': workorder.workorder,
+                'folder': workorder.folder,
+                'found': workorder.found,
+                'archived': workorder.archived
+            })
+        return {'workorders': results}
