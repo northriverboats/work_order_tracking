@@ -2,7 +2,7 @@
   <section>
      <section>
       <b-button>Add WO</b-button>
-      <b-button type="is-primary" @click="clickMe">View WOs</b-button>
+      <b-button type="is-primary">View WOs</b-button>
       <p>&nbsp;</p>
     </section>
     <b-field>
