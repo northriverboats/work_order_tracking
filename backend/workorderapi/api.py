@@ -44,7 +44,8 @@ class FileStatus(Resource):
         else:
             return {'status': 'Done'}
 
-        if 'Done' in meta['status']:
+        status = meta.get('status', '')
+        if status == 'Done':
             # should not happen, add only if not in db already
             exists = Workorder.query.filter_by(workorder=meta['name']).first()
             if not exists:
