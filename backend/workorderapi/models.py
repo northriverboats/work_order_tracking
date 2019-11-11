@@ -35,6 +35,7 @@ class Workorder(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     workorder = db.Column(db.String(1024), unique=True, nullable=False)
+    hull = db.Column(db.String(10), unique=True, nullable=False)
     folder = db.Column(db.String(128), nullable=False)
     found = db.Column(db.Boolean, default=False, nullable=False)
     archived = db.Column(db.Boolean, default=False, nullable=False)
@@ -48,6 +49,7 @@ class Workorder(db.Model):
     def to_dict(self):
         return dict(id=self.id,
                     workorder=self.workorder,
+                    hull=self.hull,
                     folder=self.folder,
                     found=self.found,
                     archived=self.archived,
