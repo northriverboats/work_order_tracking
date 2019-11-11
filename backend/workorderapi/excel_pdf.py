@@ -3,8 +3,11 @@ from shutil import copyfile
 from openpyxl import load_workbook
 from pathlib import Path
 from tempfile import mkdtemp
+from dotenv import load_dotenv
+from git import Repo
 import os
 import subprocess
+import re
 
 
 class Spreadsheet():
@@ -90,8 +93,10 @@ class Spreadsheet():
             self.text.append(value)
 
     def save_text_version(self):
-        with open('/opt/workorders_git/' + self.file.stem + '.txt',
-                  'w') as file:
+        path = os.path.join(os.getenv('GIT_REPO_PATH') + '/' +
+                            self.file.stem + '.txt')
+        self.set_status('Saving to: {}'.format(path))
+        with open(path, 'w') as file:
             for text in self.text:
                 file.write(text + "\n")
 
@@ -132,10 +137,25 @@ class Spreadsheet():
                          self.file.name,
                          self.folder + '/workorder.xlsx'])
 
+    def git_add(self):
+        match = re.search(r'(\d{5} ?[A-L]\d{3})', str(self.file))
+        if match:
+            message = "Now Tracking workorder for {}".format(match.group())
+        else:
+            message = "Now Tracking new workorder"
+        repo = Repo(os.getenv('GIT_REPO_PATH'))
+        repo.index.add(self.file.stem + '.txt')
+        repo.index.commit(message)
+
     def proccess_sheet(self):
+        load_dotenv()
         self.prep_sheet()
         self.opensheet()
         self.find_edges()
+        if self.start == 0:
+            self.set_status('Not a Workorder')
+            self.set_status('Error')
+            return
         self.create_text_version()
         self.crop_sheet()
         self.set_print_properties()
@@ -146,6 +166,7 @@ class Spreadsheet():
         else:
             self.set_status('Skipping PDF Creation')
         self.delete_sheet()
+        self.git_add()
         self.set_status('Now Tracking {}'.format(self.file.name))
 
 
@@ -160,11 +181,14 @@ if __name__ == '__main__':
     file = Path("/samba/shares/production/Boats in Production/34277 G919 " +
                 "Huntington NY 34'x12' Liberty (4-16-19)/A 1 Workorder/" +
                 "Huntington WO .xlsx")
-    """
     file = Path("/samba/shares/production/Boats in Production/21101 K920 " +
                 "Clemens EUG 2020 21' Seahawk OB #12 9-4-19/Work Order/" +
                 "21101 K920- Clemens EUG - 2020 21' Seahawk OB #12  " +
                 "MED-SDB-TD  09-04-19 WORK ORDER.xls")
-
+    """
+    file = Path("/samba/shares/production/Boats in Production/21101 K920 " +
+                "Clemens EUG 2020 21' Seahawk OB #12 9-4-19/" +
+                "Parts Costing for Boat# 21101 21' SEAHAWK OUTBOARD 2020 " +
+                "Clemens EUG.xls")
     sheet = Spreadsheet(file, None)
     sheet.proccess_sheet()

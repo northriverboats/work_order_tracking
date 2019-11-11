@@ -24,6 +24,19 @@ def set_status(message):
         print(message)
 
 
+def sanity_check(file):
+    file = Path(file)
+    if Path('/opt/workorders_git/' + file.stem + '.txt').exists():
+        set_status('File Is Already Being Tracked')
+        set_status('Error')
+        return False
+    if not (file.suffix.lower() == '.xls' or file.suffix.lower() == '.xlsx'):
+        set_status('File Is Not An Excel File')
+        set_status('Error')
+        return False
+    return True
+
+
 def add_file(file):
     global job
     job = get_current_job()
@@ -31,28 +44,32 @@ def add_file(file):
         job.meta['status'] = ''
         job.save_meta()
 
-    set_status('Adding File: {}'.format(file))
-
-    test_file = Path(file)
-    if Path('/opt/workorders_git/' + test_file.stem + '.txt').exists():
-        set_status('File Is Already Being Tracked')
-        set_status('Done')
-        return
-
-    set_status('Scanning')
-    files = scan()
-    set_status('Scan complete')
     try:
-        result = files[file]
+        if not sanity_check(file):
+            return
 
-        sheet = Spreadsheet(result, job)
-        sheet.proccess_sheet()
+        set_status('Adding File: {}'.format(file))
 
-        job.meta['folder'] = result.parts[4]
-        job.meta['path'] = result.as_posix()
-        job.meta['name'] = result.name
-        job.meta['ext'] = result.suffix
+        set_status('Scanning')
+        files = scan()
+        set_status('Scan complete')
+        try:
+            result = files[file]
 
-        set_status('Done')
-    except KeyError:
-        set_status('Not Found')
+            sheet = Spreadsheet(result, job)
+            sheet.proccess_sheet()
+
+            if 'Error' in job.meta['status']:
+                return
+
+            job.meta['folder'] = result.parts[4]
+            job.meta['path'] = result.as_posix()
+            job.meta['name'] = result.name
+            job.meta['ext'] = result.suffix
+
+            set_status('Done')
+        except KeyError:
+            set_status('Not Found')
+    except Exception:
+        set_status('Something Went Wrong')
+        set_status('Error')

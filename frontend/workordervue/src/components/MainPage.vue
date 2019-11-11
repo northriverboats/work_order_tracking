@@ -1,5 +1,10 @@
 <template>
   <section>
+     <section>
+      <b-button>Add WO</b-button>
+      <b-button type="is-primary" @click="clickMe">View WOs</b-button>
+      <p>&nbsp;</p>
+    </section>
     <b-field>
       <b-upload
         v-model="dropFiles"
@@ -45,6 +50,9 @@ export default {
         .post('file/status', {'job': this.job})
         .then((response) => {
           var lines = response.data.status.split('\n').slice(-20)
+          if (lines[lines.length - 2] === 'Error') {
+            lines[lines.length - 2] = 'Done'
+          }
           this.status = lines.join('\n')
           this.pollCount += 1
           if (lines[lines.length - 2] === 'Done' || this.pollCount > 90) {
