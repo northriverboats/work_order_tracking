@@ -6,6 +6,7 @@
         :is-full-page="true">
       </loading>
     </div>
+    <NavBar/>
     <router-view/>
   </div>
 </template>
@@ -14,19 +15,29 @@
 import Loading from 'vue-loading-overlay'
 import 'vue-loading-overlay/dist/vue-loading.css'
 import { mapGetters } from 'vuex'
+import NavBar from '@/components/Navbar'
 
 export default {
   name: 'App',
   components: {
-    Loading
+    Loading,
+    NavBar
+  },
+  data () {
+    return {
+    }
   },
   computed: {
     ...mapGetters([
-      'isLoading'
+      'isLoading',
+      'userId'
     ]),
     loaded: function () {
       return this.isLoading > 0
     }
+  },
+  created () {
+    this.$store.dispatch('loadUserId')
   }
 }
 </script>

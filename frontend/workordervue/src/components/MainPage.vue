@@ -1,10 +1,5 @@
 <template>
   <section>
-     <section>
-      <b-button type="is-primary">Add WO</b-button>
-      <b-button @click="gotoView">View WOs</b-button>
-      <p>&nbsp;</p>
-    </section>
     <b-field>
       <b-upload
         v-model="dropFiles"
@@ -45,9 +40,6 @@ export default {
     }
   },
   methods: {
-    gotoView () {
-      this.$router.push({ name: 'ListPage' })
-    },
     pollingTimer () {
       this.axios
         .post('file/status', {'job': this.job})
@@ -72,7 +64,7 @@ export default {
       this.pollingCount = 0
       console.log(file[0]['name'])
       this.axios
-        .post('file', {'name': file[0]['name']})
+        .post('file', {'name': file[0]['name'], 'userid': this.$store.getters.userId})
         .then((response) => {
           this.job = response.data.job
           this.polling = setInterval(this.pollingTimer, 500)

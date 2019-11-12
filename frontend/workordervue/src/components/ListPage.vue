@@ -1,10 +1,5 @@
 <template>
   <section>
-     <section>
-      <b-button @click="gotoAdd">Add WO</b-button>
-      <b-button type="is-primary">View WOs</b-button>
-      <p>&nbsp;</p>
-    </section>
     <b-table :data="workorders" :columns="columns"></b-table>
   </section>
 </template>
@@ -37,9 +32,6 @@ export default {
     }
   },
   methods: {
-    gotoAdd () {
-      this.$router.push({ name: 'MainPage' })
-    }
   },
   created () {
     this.axios
