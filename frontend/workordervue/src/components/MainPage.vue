@@ -1,8 +1,8 @@
 <template>
   <section>
      <section>
-      <b-button>Add WO</b-button>
-      <b-button type="is-primary">View WOs</b-button>
+      <b-button type="is-primary">Add WO</b-button>
+      <b-button @click="gotoView">View WOs</b-button>
       <p>&nbsp;</p>
     </section>
     <b-field>
@@ -45,6 +45,9 @@ export default {
     }
   },
   methods: {
+    gotoView () {
+      this.$router.push({ name: 'ListPage' })
+    },
     pollingTimer () {
       this.axios
         .post('file/status', {'job': this.job})
