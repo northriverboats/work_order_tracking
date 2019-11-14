@@ -6,15 +6,14 @@ api.py
 
 from flask import Blueprint, current_app
 from flask_restful import Resource, reqparse
-from workorderapi.models import db, Workorder, History
+from .db import Session
+from .models import Workorder
 
 api = Blueprint('api', __name__)
 
 parser_file = reqparse.RequestParser()
 parser_file.add_argument('name')
-
-parser_file_status = reqparse.RequestParser()
-parser_file_status.add_argument('job')
+parser_file.add_argument('userid')
 
 
 class TodoItem(Resource):
@@ -26,47 +25,32 @@ class File(Resource):
     def post(self):
         args = parser_file.parse_args()
         name = args['name']
+        user_id = args['userid']
         job = current_app.task_queue.enqueue(
-            'workorderapi.tasks.add_file', name)
+            'workorderapi.tasks.add_file', name, user_id)
         job.save_meta()
         return {'job': job.get_id()}
 
 
 class FileStatus(Resource):
-    def post(self):
-        args = parser_file_status.parse_args()
-        job_id = args['job']
+    def get(self, job_id):
         job = current_app.task_queue.fetch_job(job_id)
         if job:
             job.refresh()
             meta = job.meta
-
+            status = meta.get('status', '')
         else:
             return {'status': 'Done'}
-
-        status = meta.get('status', '')
-        if 'Done' in status:
-            # should not happen, add only if not in db already
-            exists = Workorder.query.filter_by(workorder=meta['name']).first()
-            if not exists:
-                hi = History(description='Added to tracking system')
-                wo = Workorder(workorder=meta['name'],
-                               hull=meta['hull'],
-                               folder=meta['folder'],
-                               history=[hi],
-                               user_id=2)
-                db.session.add(wo, hi)
-                db.session.commit()
 
         return {'status': status}
 
 
 class WorkOrderHistory(Resource):
-    def get(self):
+    def get(self, user_id):
         results = []
-        for workorder in Workorder.query.\
+        for workorder in Session.query(Workorder).\
                 order_by(Workorder.hull).\
-                filter_by(archived=False):
+                filter_by(archived=False, user_id=user_id):
             results.append({
                 'id': workorder.id,
                 'hull': workorder.hull,
@@ -75,4 +59,5 @@ class WorkOrderHistory(Resource):
                 'found': workorder.found,
                 'archived': workorder.archived
             })
+            # results.append(workorder.to_dict())
         return {'workorders': results}

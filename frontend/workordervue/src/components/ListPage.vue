@@ -5,6 +5,8 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+
 export default {
   name: 'ListPage',
   data () {
@@ -31,14 +33,27 @@ export default {
       ]
     }
   },
+  computed: {
+    ...mapState([
+      'userId'
+    ])
+  },
+  watch: {
+    userId (newValue, oldValue) {
+      this.getWorkorders(newValue)
+    }
+  },
   methods: {
+    getWorkorders (userId) {
+      this.axios
+        .get('workorders/' + userId)
+        .then((response) => {
+          this.workorders = response.data.workorders
+        })
+    }
   },
   created () {
-    this.axios
-      .get('workorders')
-      .then((response) => {
-        this.workorders = response.data.workorders
-      })
+    this.getWorkorders(this.userId)
   }
 }
 </script>

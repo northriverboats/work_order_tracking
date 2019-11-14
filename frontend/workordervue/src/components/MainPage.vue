@@ -42,7 +42,7 @@ export default {
   methods: {
     pollingTimer () {
       this.axios
-        .post('file/status', {'job': this.job})
+        .get('file/status/' + this.job)
         .then((response) => {
           var lines = response.data.status.split('\n').slice(-20)
           if (lines[lines.length - 2] === 'Error') {
@@ -62,7 +62,6 @@ export default {
       this.status = ''
       this.statusOld = ''
       this.pollingCount = 0
-      console.log(file[0]['name'])
       this.axios
         .post('file', {'name': file[0]['name'], 'userid': this.$store.getters.userId})
         .then((response) => {

@@ -21,12 +21,12 @@ def create_app(app_name='WORKORDER_API'):
 
     my_api = Api(api)
     my_api.add_resource(TodoItem, '/todos/<int:id>')
+    my_api.add_resource(FileStatus, '/file/status/<string:job_id>')
     my_api.add_resource(File, '/file')
-    my_api.add_resource(FileStatus, '/file/status')
-    my_api.add_resource(WorkOrderHistory, '/workorders')
+    my_api.add_resource(WorkOrderHistory, '/workorders/<int:user_id>')
     app.register_blueprint(api, url_prefix="/api")
 
-    from workorderapi.models import db
-    db.init_app(app)
+    # from workorderapi.models import db
+    # db.init_app(app)
 
     return app

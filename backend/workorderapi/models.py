@@ -4,19 +4,21 @@ models.py
 """
 
 from datetime import datetime
-from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import relationship
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey
 
-db = SQLAlchemy()
+Base = declarative_base()
 
 
-class User(db.Model):
-
-    id = db.Column(db.Integer, primary_key=True)
-    login = db.Column(db.String(128), nullable=False)
-    name = db.Column(db.String(128), nullable=False)
-    email = db.Column(db.String(128), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    workorders = db.relationship('Workorder', backref="user", lazy='dynamic')
+class User(Base):
+    __tablename__ = 'user'
+    id = Column(Integer, primary_key=True)
+    login = Column(String(128), nullable=False)
+    name = Column(String(128), nullable=False)
+    email = Column(String(128), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    workorders = relationship('Workorder', backref="user", lazy='dynamic')
 
     def __repr__(self):
         return '<User {} {}>'.format(self.login, self.email)
@@ -31,17 +33,17 @@ class User(db.Model):
                                 self.workorders])
 
 
-class Workorder(db.Model):
-
-    id = db.Column(db.Integer, primary_key=True)
-    workorder = db.Column(db.String(1024), unique=True, nullable=False)
-    hull = db.Column(db.String(10), unique=True, nullable=False)
-    folder = db.Column(db.String(128), nullable=False)
-    found = db.Column(db.Boolean, default=False, nullable=False)
-    archived = db.Column(db.Boolean, default=False, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    history = db.relationship('History', backref="workorder", lazy='dynamic')
+class Workorder(Base):
+    __tablename__ = 'workorder'
+    id = Column(Integer, primary_key=True)
+    workorder = Column(String(1024), unique=True, nullable=False)
+    hull = Column(String(10), unique=True, nullable=False)
+    folder = Column(String(128), nullable=False)
+    found = Column(Boolean, default=False, nullable=False)
+    archived = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    user_id = Column(Integer, ForeignKey('user.id'))
+    history = relationship('History', backref="workorder", lazy='dynamic')
 
     def __repr__(self):
         return '<Workorder {}>'.format(self.workorder)
@@ -58,12 +60,12 @@ class Workorder(db.Model):
                     history=[histoy.to_dict() for histoy in self.history])
 
 
-class History(db.Model):
-
-    id = db.Column(db.Integer, primary_key=True)
-    description = db.Column(db.String(500), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    workorder_id = db.Column(db.Integer, db.ForeignKey('workorder.id'))
+class History(Base):
+    __tablename__ = 'history'
+    id = Column(Integer, primary_key=True)
+    description = Column(String(500), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    workorder_id = Column(Integer, ForeignKey('workorder.id'))
 
     def __repr__(self):
         return '<post {}>'.format(self.description)

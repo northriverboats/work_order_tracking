@@ -7,8 +7,10 @@ Check database to see if file had already been scanned
 
 """
 
-from workorderapi.scan import scan
-from workorderapi.excel_pdf import Spreadsheet
+from .scan import scan
+from .excel_pdf import Spreadsheet
+from .db import Session
+from .models import User, Workorder, History
 from rq import get_current_job
 from pathlib import Path
 import re
@@ -43,8 +45,9 @@ def sanity_check(file):
     return True
 
 
-def add_file(file):
+def add_file(file, user_id):
     global job
+    user = Session.query(User).filter_by(id=user_id).first()
     job = get_current_job()
     if job:
         job.meta['status'] = ''
@@ -69,15 +72,21 @@ def add_file(file):
                 return
 
             match = re.search(r'\d{5} ?[A-L]\d{3}', result.name)
-            job.meta['hull'] = match.group()
-            job.meta['folder'] = result.parts[4]
-            job.meta['path'] = result.as_posix()
-            job.meta['name'] = result.name
-            job.meta['ext'] = result.suffix
+            # future home of database call
+            hi = History(description='Added to tracking system')
+            wo = Workorder(workorder=result.name,
+                           hull=match.group(),
+                           folder=result.parts[4],
+                           history=[hi],
+                           user_id=user.id)
+            Session.add(hi)
+            Session.add(wo)
+            Session.commit()
 
             set_status('Done')
         except KeyError:
             set_status('Not Found')
-    except Exception:
+    except Exception as e:
+        set_status(str(e))
         set_status('Something Went Wrong')
         set_status('Error')
